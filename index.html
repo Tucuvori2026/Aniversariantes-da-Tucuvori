@@ -554,11 +554,20 @@
         $("next-note").textContent = "Adicione o primeiro aniversariante";
         return;
       }
-      const sorted = [...members].sort((a,b) => getNextDate(a) - getNextDate(b));
-      const next = sorted[0], date = getNextDate(next);
-      const diff = Math.round((date - new Date(now.getFullYear(), now.getMonth(), now.getDate())) / 86400000);
-      $("next-content").textContent = next.name;
-      $("next-note").textContent = diff === 0 ? "É hoje!" : `${String(next.day).padStart(2,"0")}/${String(next.month).padStart(2,"0")} · ${diff === 1 ? "Amanhã" : `em ${diff} dias`}`;
+      // Identifica a data mais próxima e reúne todos os aniversariantes desse mesmo dia.
+      const upcoming = members
+        .map(member => ({ member, date: getNextDate(member) }))
+        .sort((a, b) => a.date - b.date);
+
+      const nearestDate = upcoming[0].date;
+      const nextBirthdays = upcoming.filter(item => item.date.getTime() === nearestDate.getTime());
+      const diff = Math.round((nearestDate - new Date(now.getFullYear(), now.getMonth(), now.getDate())) / 86400000);
+
+      $("next-content").textContent = nextBirthdays.map(item => item.member.name).join(" • ");
+      const dateLabel = `${String(nearestDate.getDate()).padStart(2,"0")}/${String(nearestDate.getMonth() + 1).padStart(2,"0")}`;
+      const timeLabel = diff === 1 ? "Amanhã" : `em ${diff} dias`;
+      const countLabel = nextBirthdays.length === 1 ? "1 aniversariante" : `${nextBirthdays.length} aniversariantes`;
+      $("next-note").textContent = `${dateLabel} · ${countLabel} · ${timeLabel}`;
     }
 
     function makeMemberCard(member) {
