@@ -527,10 +527,18 @@
         group: String(raw.group || ""), photo: typeof raw.photo === "string" ? raw.photo : "" };
     }
 
+    // Retorna sempre a próxima ocorrência futura do aniversário.
+    // Se a data do membro for hoje, considera a próxima ocorrência no ano seguinte.
     function getNextDate(member, base = new Date()) {
       const today = new Date(base.getFullYear(), base.getMonth(), base.getDate());
       let next = new Date(today.getFullYear(), member.month - 1, member.day);
-      if (next < today) next = new Date(today.getFullYear() + 1, member.month - 1, member.day);
+
+      // O aniversário de hoje já aparece no cartão "Aniversariantes de hoje".
+      // Portanto, o cartão "Próximo aniversário" deve apontar para uma data futura.
+      if (next <= today) {
+        next = new Date(today.getFullYear() + 1, member.month - 1, member.day);
+      }
+
       return next;
     }
 
